@@ -1,6 +1,6 @@
 # Calendar
 
-A simple, ad-free Nepali calendar with public holidays. This open-source project is for personal or organizational use (commercial resale is prohibited). Check out our roadmap for upcoming features.
+A simple, ad-free Nepali calendar with public holidays.
 
 We have also introduced a basic API for date conversion and to get the current date in AD or BS. The available endpoints are:
 

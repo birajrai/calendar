@@ -1,0 +1,203 @@
+"use client";
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ThemeSwitcher } from "./theme-switcher";
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import LanguageSwitcher from "./language-switcher";
+import {
+  type CalendarDateType,
+  getAllBsYears,
+  getFullMonthDates,
+  getToday,
+} from "@/lib/nepali-date";
+import { __month, __numbers } from "@/lib/translate";
+import { MONTH_NAME_LONG } from "@/lib/constants/nepali-texts";
+
+type CalendarHeaderProps = {
+  bsYear?: number;
+  bsMonth?: number;
+  language: string;
+};
+
+const getFormattedMonthYear = (data: CalendarDateType[][]) => {
+  const firstDate = data[0][0].ad;
+  const lastDate = data[data.length - 1][data[data.length - 1].length - 1].ad;
+
+  const firstDay = new Date(firstDate.year, firstDate.month - 1, firstDate.day);
+  const lastDay = new Date(lastDate.year, lastDate.month - 1, lastDate.day);
+
+  const firstMonth = firstDay.toLocaleString("en-US", { month: "short" });
+  const lastMonth = lastDay.toLocaleString("en-US", { month: "short" });
+
+  const firstYear = firstDay.getFullYear();
+  const lastYear = lastDay.getFullYear();
+
+  if (firstYear === lastYear) {
+    return `${firstYear} ${firstMonth} / ${lastMonth}`;
+  }
+
+  return `${firstYear} / ${lastYear} ${firstMonth} / ${lastMonth}`;
+};
+
+export default function CalendarHeader({ language }: CalendarHeaderProps) {
+  const { slug } = useParams<{ slug: string[] }>();
+  const today = getToday();
+
+  const year = slug?.length ? Number.parseInt(slug[0], 10) : today.bs.year;
+  const month =
+    slug?.length > 1 ? Number.parseInt(slug[1], 10) : today.bs.month;
+
+  const calendarData = getFullMonthDates(year, month);
+  const displayYear = __numbers(year.toString(), language);
+  const displayMonth = __month(month.toString(), language);
+
+  const showGoToToday = !(today.bs.year === year && today.bs.month === month);
+  const formattedMonthYearText = getFormattedMonthYear(calendarData);
+  const years = getAllBsYears();
+  const router = useRouter();
+
+  const nextLink = () => {
+    let nextMonth = month + 1;
+    let nextYear = year;
+    if (nextMonth > 12) {
+      nextMonth = 1;
+      nextYear = year + 1;
+    }
+    const newUrl = `/date/${nextYear}/${nextMonth.toString().padStart(2, "0")}`;
+    return newUrl;
+  };
+
+  const prevLink = () => {
+    let prevMonth = month - 1;
+    let prevYear = year;
+    if (prevMonth < 1) {
+      prevMonth = 12;
+      prevYear = year - 1;
+    }
+    const newUrl = `/date/${prevYear}/${prevMonth.toString().padStart(2, "0")}`;
+    return newUrl;
+  };
+
+  const yearChangeLink = (year: string) => {
+    const newUrl = `/date/${year}/${month.toString().padStart(2, "0")}`;
+    router.push(newUrl);
+  };
+
+  const monthChangeLink = (month: string) => {
+    const newUrl = `/date/${year}/${month.toString().padStart(2, "0")}`;
+    router.push(newUrl);
+  };
+
+  return (
+    <div className="flex items-center justify-between mb-6 md:flex-row flex-col gap-4">
+      <div className="space-y-2 select-text">
+        <div className="flex items-center space-x-2">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-mono font-semibold uppercase">
+            {`${displayYear} ${displayMonth}`}
+          </h1>
+        </div>
+        <p className="text-muted-foreground uppercase flex items-center space-x-2 text-base md:text-xl">
+          {formattedMonthYearText}
+        </p>
+      </div>
+      <div className="flex gap-4 items-center flex-wrap justify-center">
+        {showGoToToday && (
+          <Link className="text-xs" href="/">
+            {language === "en" ? "Go to Today" : "आजको दिन"}
+          </Link>
+        )}
+
+        <ThemeSwitcher />
+
+        <LanguageSwitcher language={language} />
+
+        <div className="flex items-center border h-9">
+          <Link
+            className="inline-flex items-center justify-center text-sm font-medium transition-colors focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 hover:text-accent-foreground p-0 w-10 h-6 hover:bg-transparent"
+            href={prevLink()}
+            shallow={true}
+            prefetch={true}
+          >
+            <svg
+              stroke="currentColor"
+              fill="currentColor"
+              strokeWidth="0"
+              viewBox="0 0 24 24"
+              className="w-6 h-6"
+              height="1em"
+              width="1em"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <title>Previous Month</title>
+              <path fill="none" d="M0 0h24v24H0z" />
+              <path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+            </svg>
+          </Link>
+
+          <Select value={year.toString()} onValueChange={yearChangeLink}>
+            <SelectTrigger className="w-[60px] text-center px-0 text-base rounded-none border-none [&>svg]:hidden justify-center focus:ring-0 shadow-none">
+              <SelectValue placeholder={__numbers(year.toString(), language)} />
+            </SelectTrigger>
+            <SelectContent className="rounded-none min-w-[120px] -left-[40px]">
+              {years.map((year) => (
+                <SelectItem
+                  className="rounded-none"
+                  key={year}
+                  value={year.toString()}
+                >
+                  {__numbers(year.toString(), language)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={month.toString()} onValueChange={monthChangeLink}>
+            <SelectTrigger className="w-[80px] text-center px-0 text-base rounded-none border-none [&>svg]:hidden justify-center focus:ring-0 shadow-none">
+              <SelectValue placeholder={__month(month.toString(), language)} />
+            </SelectTrigger>
+            <SelectContent className="rounded-none min-w-[120px] -left-[20px]">
+              {Object.keys(MONTH_NAME_LONG).map((name, index) => (
+                <SelectItem
+                  className="rounded-none"
+                  key={name}
+                  value={(index + 1).toString()}
+                >
+                  {__month(name, language)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Link
+            className="inline-flex items-center justify-center text-sm font-medium transition-colors focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 hover:text-accent-foreground p-0 w-10 h-6 hover:bg-transparent"
+            href={nextLink()}
+            shallow={true}
+            prefetch={true}
+          >
+            <svg
+              stroke="currentColor"
+              fill="currentColor"
+              strokeWidth="0"
+              viewBox="0 0 24 24"
+              className="w-6 h-6"
+              height="1em"
+              width="1em"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <title>Next Month</title>
+              <path fill="none" d="M0 0h24v24H0z" />
+              <path d="M10 6 8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
+            </svg>
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}

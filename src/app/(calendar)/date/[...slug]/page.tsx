@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const monthName = month ? __month(month.toString(), "en") : "";
 
   return {
-    title: `Nepali Calendar - ${year} ${monthName}`,
+    title: `Mero Patra Calendar - ${year} ${monthName}`,
   };
 }
 

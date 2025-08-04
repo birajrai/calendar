@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Analytics } from "@vercel/analytics/react";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
@@ -16,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Nepali Calendar",
-  description: "Nepali Calendar",
+  title: "Mero Patra Calendar",
+  description: "Mero Patra Calendar",
   icons: {
     icon: "/favicon.ico",
   },
